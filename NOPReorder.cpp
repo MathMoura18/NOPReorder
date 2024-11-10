@@ -42,7 +42,9 @@ private:
     
     string classifyInstruction(const string& binary) {
         string opcode = binary.substr(25, 7);
-        if (ALU_OPCODES.count(opcode)) {
+        if (binary == "00000000000000000000000000010011"){
+            return "NOP";
+        } else if (ALU_OPCODES.count(opcode)) {
             alu++;
             return "ALU";
         } else if (JUMP_OPCODES.count(opcode)) {
@@ -54,8 +56,6 @@ private:
         } else if (MEMORY_OPCODES.count(opcode)) {
             memory++;
             return "Memory";
-        } else if (opcode == "00000013"){
-            return "NOP";
         } else {
             other++;
             return "Other";
@@ -128,10 +128,13 @@ private:
                             string currSrcReg1Counter = binaryCounter.substr(12, 5);
                             string currSrcReg2Counter = binaryCounter.substr(7, 5);
 
+                            // Deve-se verificar também se a instrução não é um NOP pois senao o código vai reordenar um NOP
                             if (prevDestReg == prevDestRegCounter || prevDestReg == currSrcReg1Counter || prevDestReg == currSrcReg2Counter) {
+                                // Verificar essa função de inserir pois talvez não se deva fazer nada caso não para fazer a reordenação 
                                 modifiedInstructionsWithForwarding.insert(modifiedInstructionsWithForwarding.begin() + i + 1, "00000013");
                             }
                             else {
+                                // Verificar novamente essa parte de reordenação
                                 modifiedInstructionsWithForwarding.insert(modifiedInstructionsWithForwarding.begin() + (i + 1), instructionCounter);
                                 modifiedInstructionsWithForwarding[counter] = "";
                             }
@@ -225,7 +228,8 @@ int main(int argc, char* argv[]) {
     //     getline(cin, filePath);
     // }
 
-    filePath = "C:\\Users\\8244308\\Downloads\\exemplohex.hex";
+    filePath = "C:\\dev\\wsPersonal\\NOPReorder\\example.hex";
+
     RISCVInstructionReader classifier;
     classifier.processFile(filePath);
 
