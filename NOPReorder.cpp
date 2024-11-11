@@ -157,20 +157,25 @@ public:
         applyDelayedBranch();
     }
 
-    void printInitialInstructions() {
-        cout << "Lista Inicial de Instru��es:" << endl;
-        for (size_t i = 0; i < instructions.size(); ++i) {
-            string binary = hexToBinary(instructions[i]);
-            string type = classifyInstruction(binary);
-            cout << i + 1 << ". Hex: " << instructions[i] << " - Tipo: " << type << endl;
+    void printModifiedInstructions() {
+        cout << "Lista Modificada de Instrucoes (com NOPs):" << endl;
+        for (size_t i = 0; i < modifiedInstructionsWithForwarding.size(); ++i) {
+            string instruction = modifiedInstructionsWithForwarding[i];
+            if (instruction == "00000013") {
+                cout << i + 1 << ". NOP inserido" << endl;
+            } else {
+                cout << i + 1 << ". Hex: " << instruction << " - Tipo: ";
+                string binary = hexToBinary(instruction);
+                cout << classifyInstruction(binary) << endl;
+            }
         }
         cout << endl;
     }
 
-    void printModifiedInstructions() {
-        cout << "Lista Modificada de Instru��es (com NOPs e/ou reordenamento):" << endl;
-        for (size_t i = 0; i < modifiedInstructionsWithForwarding.size(); ++i) {
-            string instruction = modifiedInstructionsWithForwarding[i];
+    void printReorderedInstructions() {
+        cout << "Lista Reordenada de Instrucoes (com NOPs e/ou reordenamento):" << endl;
+        for (size_t i = 0; i < modifiedInstructionsWithReordering.size(); ++i) {
+            string instruction = modifiedInstructionsWithReordering[i];
             if (instruction == "00000013") {
                 cout << i + 1 << ". NOP inserido" << endl;
             } else {
@@ -195,6 +200,10 @@ public:
     // M�todo de retorno das instru��es modificadas com forwarding
     const vector<string>& getModifiedInstructionsWithForwarding() {
         return modifiedInstructionsWithForwarding;
+    }
+
+    const vector<string>& getModifiedInstructionsWithReordering() {
+        return modifiedInstructionsWithReordering;
     }
 
     void generateModifiedFile(const string& fileName, const vector<string>& modifiedInstructions) {
@@ -227,10 +236,9 @@ int main(int argc, char* argv[]) {
     RISCVInstructionReader classifier;
     classifier.processFile(filePath);
 
-    classifier.printInitialInstructions();
     classifier.printStatistics();
     classifier.printModifiedInstructions();
 
-    classifier.generateModifiedFile("modified_with_forwarding.hex", classifier.getModifiedInstructionsWithForwarding());
+    classifier.generateModifiedFile("modified_with_forwarding.hex", classifier.getModifiedInstructionsWithReordering());
     return 0;
 }
