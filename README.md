@@ -20,7 +20,7 @@
 To use this project, you only need to download it and run it!
 1. Clone the repository:
 
-   git clone https://github.com/MathMoura18/RISCV-NOPReorder.git
+   git clone https://github.com/MathMoura18/NOPReorder.git
 
 2. Execute NOPReader:
    
