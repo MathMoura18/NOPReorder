@@ -33,6 +33,7 @@ private:
 
     vector<string> instructions;
     vector<string> modifiedInstructionsWithForwarding;
+    vector<string> modifiedInstructionsWithReordering;
 
     string hexToBinary(const string& hex) const {
         unsigned int n = stoul(hex, nullptr, 16);
@@ -117,33 +118,26 @@ private:
 
             if (!previousInstruction.empty()){
                 if (detectDataHazard(previousInstruction, binary, type) || type == "NOP"){
-                    string previousInstructionCounter;
-                    for (int counter = i; counter >= 0; counter--) {
+                    for (int counter = i - 1; counter >= 0; counter--) {
                         string instructionCounter = modifiedInstructionsWithForwarding[counter];
                         string binaryCounter = hexToBinary(instructionCounter);
                         string typeCounter = classifyInstruction(binaryCounter);
 
-                        if (!previousInstructionCounter.empty()) {
-                            string prevDestRegCounter = binaryCounter.substr(20, 5);
-                            string currSrcReg1Counter = binaryCounter.substr(12, 5);
-                            string currSrcReg2Counter = binaryCounter.substr(7, 5);
+                        string prevDestRegCounter = binaryCounter.substr(20, 5);
+                        string currSrcReg1Counter = binaryCounter.substr(12, 5);
+                        string currSrcReg2Counter = binaryCounter.substr(7, 5);
 
-                            // Deve-se verificar também se a instrução não é um NOP pois senao o código vai reordenar um NOP
-                            if (prevDestReg == prevDestRegCounter || prevDestReg == currSrcReg1Counter || prevDestReg == currSrcReg2Counter) {
-                                // Verificar essa função de inserir pois talvez não se deva fazer nada caso não para fazer a reordenação 
-                                modifiedInstructionsWithForwarding.insert(modifiedInstructionsWithForwarding.begin() + i + 1, "00000013");
-                            }
-                            else {
-                                // Verificar novamente essa parte de reordenação
-                                modifiedInstructionsWithForwarding.insert(modifiedInstructionsWithForwarding.begin() + (i + 1), instructionCounter);
-                                modifiedInstructionsWithForwarding[counter] = "";
-                            }
+                        if ((typeCounter != "NOP") && (prevDestReg != prevDestRegCounter) && (prevDestReg != currSrcReg1Counter) && (prevDestReg != currSrcReg2Counter)) {
+                            modifiedInstructionsWithReordering.push_back(instructionCounter);
+                            modifiedInstructionsWithReordering[counter] = "";
+                        } else if (type != "NOP"){
+                            modifiedInstructionsWithReordering.push_back("00000013");
                         }
-                        previousInstructionCounter = binaryCounter;
                     }
                 }
             }
             previousInstruction = binary;
+            modifiedInstructionsWithReordering.push_back(instruction);
         }
     }
 
