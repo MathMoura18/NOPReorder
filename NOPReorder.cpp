@@ -116,8 +116,18 @@ private:
             string type = classifyInstruction(binary);
             string prevDestReg = binary.substr(20, 5);
 
+            bool isNOPNecessary = false;
             if (!previousInstruction.empty()){
-                if (detectDataHazard(previousInstruction, binary, type) || type == "NOP"){
+                if (detectDataHazard(previousInstruction, binary, type) || type == "NOP"){                
+                    // Se estiver analisando um NOP, então deve-se analisar a instrução anterior a ele
+                    if (type == "NOP"){
+                        string prevNOPInstruction = modifiedInstructionsWithForwarding[i - 1];
+                        string prevNOPbinary = hexToBinary(prevNOPInstruction);
+                        string prevNOPType = classifyInstruction(prevNOPbinary);
+                        string prevNOPDestReg = prevNOPbinary.substr(20, 5);
+                        prevDestReg = prevNOPDestReg;
+                    }
+
                     for (int counter = i - 1; counter >= 0; counter--) {
                         string instructionCounter = modifiedInstructionsWithForwarding[counter];
                         string binaryCounter = hexToBinary(instructionCounter);
@@ -127,17 +137,31 @@ private:
                         string currSrcReg1Counter = binaryCounter.substr(12, 5);
                         string currSrcReg2Counter = binaryCounter.substr(7, 5);
 
+                        // Condições para reordenação
                         if ((typeCounter != "NOP") && (prevDestReg != prevDestRegCounter) && (prevDestReg != currSrcReg1Counter) && (prevDestReg != currSrcReg2Counter)) {
                             modifiedInstructionsWithReordering.push_back(instructionCounter);
                             modifiedInstructionsWithReordering[counter] = "";
-                        } else if (type != "NOP"){
-                            modifiedInstructionsWithReordering.push_back("00000013");
+                            isNOPNecessary = false;  
+                            break;                          
                         }
+                        isNOPNecessary = true;
                     }
                 }
             }
             previousInstruction = binary;
-            modifiedInstructionsWithReordering.push_back(instruction);
+            
+            if (isNOPNecessary){
+                if (type == "NOP") {
+                    modifiedInstructionsWithReordering.push_back(instruction);
+                } else {
+                    modifiedInstructionsWithReordering.push_back("00000013");
+                    modifiedInstructionsWithReordering.push_back(instruction);
+                }
+            } else {
+                if (type != "NOP"){
+                    modifiedInstructionsWithReordering.push_back(instruction);
+                }
+            }
         }
     }
 
