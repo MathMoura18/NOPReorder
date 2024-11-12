@@ -87,10 +87,10 @@ private:
         }
     }
 
-    bool detectDataHazard(const string& previous, const string& current, string instructionType) {
+    bool detectDataHazard(const string& previous, const string& current, string currentInstructionType) {
         bool isInstructionMemory = false;
 
-        if (instructionType == "Memory")
+        if (currentInstructionType == "Memory")
             isInstructionMemory = true;
 
         string prevDestReg = previous.substr(20, 5);
@@ -134,11 +134,13 @@ private:
                         string typeCounter = classifyInstruction(binaryCounter);
 
                         string prevDestRegCounter = binaryCounter.substr(20, 5);
+                        string prevSrcReg1Counter = binaryCounter.substr(12, 5);
+                        string prevSrcReg2Counter = binaryCounter.substr(7, 5);
                         string currSrcReg1Counter = binaryCounter.substr(12, 5);
                         string currSrcReg2Counter = binaryCounter.substr(7, 5);
 
                         // Condições para reordenação
-                        if ((typeCounter != "NOP") && (prevDestReg != prevDestRegCounter) && (prevDestReg != currSrcReg1Counter) && (prevDestReg != currSrcReg2Counter)) {
+                        if ((typeCounter != "NOP") && detectDataHazard(binaryCounter, binary, type)) {
                             modifiedInstructionsWithReordering.push_back(instructionCounter);
                             modifiedInstructionsWithReordering[counter] = "";
                             isNOPNecessary = false;  
@@ -255,7 +257,7 @@ int main(int argc, char* argv[]) {
     //     getline(cin, filePath);
     // }
 
-    filePath = "C:\\dev\\wsPersonal\\NOPReorder\\example.hex";
+    filePath = "C:\\dev\\wsEducational\\univali\\NOPReorder\\example.hex";
 
     RISCVInstructionReader classifier;
     classifier.processFile(filePath);
