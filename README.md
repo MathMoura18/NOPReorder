@@ -1,6 +1,6 @@
 # NOPReorder
 
-**NOPReorder** is a project developed to reorder and insert NOP (No Operation) instructions into RISC-V Assembly code, aiming to optimize execution, fix alignment issues, or improve the overall structure of the code. This process is useful in reverse engineering, performance analysis, or embedded systems that require precise control over code execution.
+**NOPReorder** is a project developed to reordering and insert NOP (No Operation) instructions into RISC-V Assembly code, aiming to optimize execution, fix alignment issues, or improve the overall structure of the code. This process is useful in reverse engineering, performance analysis, or embedded systems that require precise control over code execution.
 
 ### Features
 
