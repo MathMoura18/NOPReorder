@@ -84,6 +84,9 @@ private:
             previousInstruction = binary;
 
             modifiedInstructionsWithForwarding.push_back(instruction);
+
+            if (type == "Jump")
+                insertNOPsWithForwarding();
         }
     }
 
@@ -110,6 +113,7 @@ private:
 
     void applyDelayedBranch() {
         string previousInstruction;
+        int flag = 0;
         for (size_t i = 0; i < modifiedInstructionsWithForwarding.size(); ++i) {
             string instruction = modifiedInstructionsWithForwarding[i];
             string binary = hexToBinary(instruction);
@@ -126,9 +130,16 @@ private:
                         string prevNOPType = classifyInstruction(prevNOPbinary);
                         string prevNOPDestReg = prevNOPbinary.substr(20, 5);
                         prevDestReg = prevNOPDestReg;
+                        for (int x = 2; prevNOPType == "NOP"; x++){
+                            prevNOPInstruction = modifiedInstructionsWithForwarding[i - x];
+                            prevNOPbinary = hexToBinary(prevNOPInstruction);
+                            prevNOPType = classifyInstruction(prevNOPbinary);
+                            prevNOPDestReg = prevNOPbinary.substr(20, 5);
+                            prevDestReg = prevNOPDestReg;
+                        }
                     }
 
-                    for (int counter = i - 1; counter >= 0; counter--) {
+                    for (int counter = i - 1; counter > flag; counter--) {
                         string instructionCounter = modifiedInstructionsWithForwarding[counter];
                         string binaryCounter = hexToBinary(instructionCounter);
                         string typeCounter = classifyInstruction(binaryCounter);
@@ -140,10 +151,11 @@ private:
                         string currSrcReg2Counter = binaryCounter.substr(7, 5);
 
                         // Condições para reordenação
-                        if ((typeCounter != "NOP") && detectDataHazard(binaryCounter, binary, type)) {
+                        if ((typeCounter != "NOP") && (prevDestReg != prevDestRegCounter) && (prevDestReg != currSrcReg1Counter) && (prevDestReg != currSrcReg2Counter)) {
                             modifiedInstructionsWithReordering.push_back(instructionCounter);
                             modifiedInstructionsWithReordering[counter] = "";
                             isNOPNecessary = false;  
+                            flag = i;
                             break;                          
                         }
                         isNOPNecessary = true;
